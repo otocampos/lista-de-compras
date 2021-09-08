@@ -12,6 +12,7 @@ Customizar o item do listview com ListTile
 
 Excluir item da lista com um botão de excluir no listTile
 
+![alt text](https://github.com/otocampos/lista-de-compras/blob/master/lista_de_compras/tela1.PNG?raw=true)
 
 
 
