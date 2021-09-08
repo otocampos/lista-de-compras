@@ -1,6 +1,16 @@
 # lista_de_compras
 
-app para a didática do curso de flutter
+app para a didática do meu curso de flutter
+
+Neste app são aplicados conceitos básicos do Flutter.
+
+Criar um listview
+Adicionar item no listview por meio de um formulário
+Customizar o item do listview com ListTile
+Excluir item da lista com um botão de excluir no listTile
+
+
+
 
 ## Getting Started
 
