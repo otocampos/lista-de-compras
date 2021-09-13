@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lista_de_compras/constantes/constantesRotas.dart';
 import 'package:lista_de_compras/models/Item.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class telaPrincipal extends StatefulWidget {
   @override
@@ -11,12 +13,55 @@ class _telaPrincipalState extends State<telaPrincipal> {
   var lista = <Item>[];
   final edtTxtItemController = TextEditingController();
   final edtTxtQntController = TextEditingController();
+  Color? corCard ;
+
+  @override
+  void initState() {
+    Ccor();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Lista de Compras'),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.save),
+            color: Colors.white,
+            tooltip: "Save all",
+            onPressed: () {
+              showDialog<String>(
+                context: context,
+                builder: (BuildContext context) => AlertDialog(
+                  title: const Text('AlertDialog Title'),
+                  content: const Text('AlertDialog description'),
+                  actions: <Widget>[
+
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, 'Cancel'),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+
+                      },
+                      child: const Text('OK'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.settings),
+            color: Colors.white,
+            tooltip: "config",
+            onPressed: () {
+              Navigator.pushNamed(context, Rota.rotaConfigs);
+            },
+          ),
+        ],
       ),
       body: Center(
           child: Column(children: <Widget>[
@@ -31,16 +76,17 @@ class _telaPrincipalState extends State<telaPrincipal> {
                         padding:
                             const EdgeInsets.only(left: 32, right: 32, top: 8),
                         child: Card(
+                            color: corCard,
                             elevation: 8.0,
                             child: ListTile(
-                              trailing:IconButton(
-                                icon: Icon(Icons.delete),
-                                onPressed: () {
-                                  setState(() {
-                                  lista.removeAt(index);
-                                  });
-                                },
-                              ) ,
+                                trailing: IconButton(
+                                  icon: Icon(Icons.delete),
+                                  onPressed: () {
+                                    setState(() {
+                                      lista.removeAt(index);
+                                    });
+                                  },
+                                ),
                                 leading: Text('${index + 1}'),
                                 subtitle: Text('${lista[index].quantidade} Kg'),
                                 title: Text('${lista[index].nome}'))),
@@ -80,13 +126,15 @@ class _telaPrincipalState extends State<telaPrincipal> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(bottom: 16.0,right: 16),
+                padding: const EdgeInsets.only(bottom: 16.0, right: 16),
                 child: IconButton(
                   color: Colors.blue,
-                  icon: Icon(Icons.save),
+                  icon: Icon(Icons.check),
                   onPressed: () {
                     setState(() {
-                      var item = Item(nome: edtTxtItemController.text, quantidade:int.parse(edtTxtQntController.text));
+                      var item = Item(
+                          nome: edtTxtItemController.text,
+                          quantidade: int.parse(edtTxtQntController.text));
                       lista.add(item);
                       edtTxtItemController.clear();
                       edtTxtQntController.clear();
@@ -99,5 +147,15 @@ class _telaPrincipalState extends State<telaPrincipal> {
         )
       ])),
     );
+  }
+
+  void Ccor() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var cor = prefs.getString('corCards') ?? false;
+    print(cor);
+    setState(() {
+      Color? teste = Rota.mapColors[cor];
+      corCard = teste ?? Colors.white;
+    });
   }
 }
