@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lista_de_compras/constantes/constantesRotas.dart';
+import 'package:lista_de_compras/helpers/database_helper.dart';
 import 'package:lista_de_compras/models/Item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -13,7 +14,12 @@ class _telaPrincipalState extends State<telaPrincipal> {
   var lista = <Item>[];
   final edtTxtItemController = TextEditingController();
   final edtTxtQntController = TextEditingController();
-  Color? corCard ;
+  Color? corCard;
+  DatabaseHelper dataBaseHelper = DatabaseHelper();
+
+  Future<List<Item>> fetchAllItensById(int id) async {
+    return dataBaseHelper.getAllItensFromList(id);
+  }
 
   @override
   void initState() {
@@ -22,6 +28,8 @@ class _telaPrincipalState extends State<telaPrincipal> {
 
   @override
   Widget build(BuildContext context) {
+    var idListaDeCompras = ModalRoute.of(context)?.settings.arguments as int;
+    print(idListaDeCompras);
     return Scaffold(
       appBar: AppBar(
         title: Text('Lista de Compras'),
@@ -37,15 +45,12 @@ class _telaPrincipalState extends State<telaPrincipal> {
                   title: const Text('AlertDialog Title'),
                   content: const Text('AlertDialog description'),
                   actions: <Widget>[
-
                     TextButton(
                       onPressed: () => Navigator.pop(context, 'Cancel'),
                       child: const Text('Cancel'),
                     ),
                     TextButton(
-                      onPressed: () {
-
-                      },
+                      onPressed: () {},
                       child: const Text('OK'),
                     ),
                   ],
@@ -66,17 +71,18 @@ class _telaPrincipalState extends State<telaPrincipal> {
       body: Center(
           child: Column(children: <Widget>[
         SizedBox(height: 18),
-        lista.length > 0
-            ? Expanded(
-                child: ListView.builder(
-                    padding: EdgeInsets.all(16),
-                    itemCount: lista.length,
-                    itemBuilder: (BuildContext context, int index) {
+        Expanded(
+          child: FutureBuilder<List<Item>>(
+            future: fetchAllItensById(idListaDeCompras),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return  ListView.builder(
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, index) {
+                      List<Item>? itensList = snapshot.data;
                       return Padding(
-                        padding:
-                            const EdgeInsets.only(left: 32, right: 32, top: 8),
+                        padding: const EdgeInsets.only(left: 32, right: 32, top: 8),
                         child: Card(
-                            color: corCard,
                             elevation: 8.0,
                             child: ListTile(
                                 trailing: IconButton(
@@ -87,12 +93,23 @@ class _telaPrincipalState extends State<telaPrincipal> {
                                     });
                                   },
                                 ),
+                                onTap: (){
+                                  print('click');
+                                  Navigator.pushNamed(context, Rota.rotaInicial,arguments:itensList?[index].id );
+                                },
                                 leading: Text('${index + 1}'),
-                                subtitle: Text('${lista[index].quantidade} Kg'),
-                                title: Text('${lista[index].nome}'))),
+                                title: Text('${itensList?[index].nome}'))),
                       );
-                    }))
-            : Expanded(child: Center(child: Text('Lista está vaia'))),
+                    });
+              } else if (snapshot.hasError) {
+                return new Text("${snapshot.error}");
+              }
+              return new Container(
+                alignment: AlignmentDirectional.center,
+                child: new CircularProgressIndicator(),
+              );
+            },
+          ),),
         Padding(
           padding: const EdgeInsets.all(32.0),
           child: Row(
@@ -130,12 +147,13 @@ class _telaPrincipalState extends State<telaPrincipal> {
                 child: IconButton(
                   color: Colors.blue,
                   icon: Icon(Icons.check),
-                  onPressed: () {
+                  onPressed: () async {
                     setState(() {
                       var item = Item(
+                          idLista_FK: idListaDeCompras,
                           nome: edtTxtItemController.text,
                           quantidade: int.parse(edtTxtQntController.text));
-                      lista.add(item);
+                      dataBaseHelper.insertCriarItens(item).then((value) => print(value.nome));
                       edtTxtItemController.clear();
                       edtTxtQntController.clear();
                     });

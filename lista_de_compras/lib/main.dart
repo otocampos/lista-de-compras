@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
 
 
       debugShowCheckedModeBanner: false,
-      initialRoute: Rota.rotaInicial,
+      initialRoute: Rota.rotaListasdeCompras,
       routes: {
         Rota.rotaInicial: (context) => telaPrincipal(),
         Rota.rotaConfigs: (context) => telaConfig(),

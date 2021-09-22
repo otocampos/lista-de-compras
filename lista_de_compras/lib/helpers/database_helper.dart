@@ -19,41 +19,44 @@ class DatabaseHelper {
     }
     return _databaseHelper!;
   }
+
   Future<Database?> get database async {
     if (_database == null) {
       _database = await initializeDatabase();
     }
     return _database;
   }
+
   Future<Database> initializeDatabase() async {
     Directory directory = await getApplicationDocumentsDirectory();
     String path = '${directory.path}listadecompras.db';
 
     var listaDatabase =
-    await openDatabase(path, version: 1, onCreate: _createDB);
+        await openDatabase(path, version: 1, onCreate: _createDB);
     return listaDatabase;
   }
+
   void _createDB(Database db, int newVersion) async {
     await db.execute(
         'CREATE TABLE IF NOT EXISTS ${constantesTabelas.TABLE_LISTA_DE_COMPRAS} (${constantesTabelas.COL_ID_LISTA_DE_COMPRAS} integer primary key autoincrement,'
-            ' ${constantesTabelas.COL_QNT_ITENS_LISTA_DE_COMPRAS} integer not null,'
-            ' ${constantesTabelas.COL_NOME_LISTA_DE_COMPRAS} text not null)');
+        ' ${constantesTabelas.COL_NOME_LISTA_DE_COMPRAS} text not null)');
     await db.execute(
         'CREATE TABLE IF NOT EXISTS ${constantesTabelas.TABLE_ITENS_COMPRAS} (${constantesTabelas.COL_ID_ITEM} integer primary key autoincrement,'
-            ' ${constantesTabelas.COL_NOME_ITEM} text not null,'
-            ' ${constantesTabelas.COL_ID_LISTA_PAI} integer not null,'
-            '${constantesTabelas.COL_QNT_ITENS_LISTA_DE_COMPRAS} integer not null,'
-    'FOREIGN KEY(${constantesTabelas.COL_ID_LISTA_PAI}) REFERENCES ${constantesTabelas.TABLE_LISTA_DE_COMPRAS}(${constantesTabelas.COL_ID_LISTA_DE_COMPRAS}))');
-
+        ' ${constantesTabelas.COL_NOME_ITEM} text not null,'
+        ' ${constantesTabelas.COL_ID_LISTA_PAI} integer not null,'
+        '${constantesTabelas.COL_QNT_ITENS_LISTA_DE_COMPRAS} integer not null,'
+        'FOREIGN KEY(${constantesTabelas.COL_ID_LISTA_PAI}) REFERENCES ${constantesTabelas.TABLE_LISTA_DE_COMPRAS}(${constantesTabelas.COL_ID_LISTA_DE_COMPRAS}))');
   }
 
-  Future<Lista>insertCriarListaDeCompras(Lista lista) async {
+  Future<Lista> insertCriarListaDeCompras(Lista lista) async {
     Database? db = await this.database;
-    lista.id = await db!.insert(constantesTabelas.TABLE_LISTA_DE_COMPRAS,lista.toMap());
+    lista.id = await db!
+        .insert(constantesTabelas.TABLE_LISTA_DE_COMPRAS, lista.toMap());
+    print(lista.nome);
     return lista;
   }
 
-  Future<List<Lista>>getAllLista(Lista lista) async {
+  Future<List<Lista>> getAllLista() async {
     Database? db = await this.database;
 
     var resultado = await db!.query(constantesTabelas.TABLE_LISTA_DE_COMPRAS);
@@ -63,14 +66,22 @@ class DatabaseHelper {
     return lista;
   }
 
-   insertCriarItens(List<Item> itens,int idLista) async {
+  Future<List<Item>> getAllItensFromList(int id) async {
     Database? db = await this.database;
-   itens.forEach((element) async{
-       await db!.insert(constantesTabelas.TABLE_LISTA_DE_COMPRAS,element.toMap()).then((value) => print(value));
-    });
+    var resultado = await db!.query(constantesTabelas.TABLE_ITENS_COMPRAS,where: '${constantesTabelas.COL_ID_LISTA_PAI}=?',
+        whereArgs: [id]);
+    List<Item> listaItens = resultado.isNotEmpty
+        ? resultado.map((e) => Item.fromMap(e)).toList()
+        : [];
+    return listaItens;
   }
 
 
+  Future<Item> insertCriarItens(Item item) async {
+    Database? db = await this.database;
+    item.id = await db!.insert(constantesTabelas.TABLE_ITENS_COMPRAS, item.toMap());
+    return item;
+  }
 
   Future close() async {
     Database? db = await this.database;

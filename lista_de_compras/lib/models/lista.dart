@@ -7,6 +7,9 @@ class Lista{
     var map = <String, dynamic>{
     'nome': nome,
     };
+    if (id != null) {
+      map['id'] = id;
+    }
     return map;
   }
   Lista.fromMap(Map<String, dynamic> map) {
